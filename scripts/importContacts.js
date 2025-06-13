@@ -1,0 +1,24 @@
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import { readFile } from 'fs/promises';
+import { Contact } from '../db/Models/Contact.js';
+
+dotenv.config();
+
+const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } = process.env;
+const mongoUri = `mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
+
+const importData = async () => {
+  try {
+    await mongoose.connect(mongoUri); 
+    const data = await readFile('./data/contacts.json', 'utf-8');
+    const contacts = JSON.parse(data);
+    await Contact.insertMany(contacts);
+    console.log('Veriler başarıyla yüklendi');
+    process.exit();
+  } catch (error) {
+    console.error('Veri yükleme hatası:', error.message);
+    process.exit(1);
+  }
+};
+importData();
