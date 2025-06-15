@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import { Contact } from '../src/db/models/Contact.js';
 import { readFile } from 'fs/promises';
-import { Contact } from '../db/Models/Contact.js';
 
 dotenv.config();
 
@@ -10,7 +10,7 @@ const mongoUri = `mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_UR
 
 const importData = async () => {
   try {
-    await mongoose.connect(mongoUri); 
+    await mongoose.connect(mongoUri);
     const data = await readFile('./data/contacts.json', 'utf-8');
     const contacts = JSON.parse(data);
     await Contact.insertMany(contacts);
