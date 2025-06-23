@@ -1,5 +1,35 @@
 import mongoose from 'mongoose';
 import { getAllContacts, getContactById } from '../services/contacts.js';
+import { addContact } from '../services/contacts.js';
+import createError from 'http-errors';
+import { updateContactById } from '../services/contacts.js';
+import { deleteContactById } from '../services/contacts.js';
+
+export const addContactController = async (req, res, next) => {
+  try {
+    const { name, email, phoneNumber, isFavorite, contactType } = req.body;
+
+    if (!name || !contactType || !phoneNumber) {
+      throw createError(404, 'Missing required fields');
+    }
+
+    const newContact = await addContact({
+      name,
+      email,
+      phoneNumber,
+      isFavorite,
+      contactType,
+    });
+
+    res.status(201).json({
+      status: 201,
+      message: 'Succesfully created a contact!',
+      data: newContact,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getAllContactsController = async (req, res) => {
   try {
@@ -21,10 +51,10 @@ export const getAllContactsController = async (req, res) => {
 export const getContactByIdController = async (req, res) => {
   try {
     const { contactId } = req.params;
-    
-     // ➤ ObjectId format kontrolü
+
+    // ➤ ObjectId format kontrolü
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return res.status(404).json({ message: 'Contact not found' });
+      throw createError(404, 'Contact not found');
     }
 
     // Şu an burada getContactById fonksiyonunu çağıracağız (services klasöründen)
@@ -40,7 +70,46 @@ export const getContactByIdController = async (req, res) => {
       data: contact,
     });
   } catch (error) {
-    console.error('Kontak ID ile alınamadı:', error.message);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(error.status || 500).json({
+      status: error.status || 500,
+      message: error.message || 'Internal server error',
+      data: error.message || 'Something went wrong',
+    });
+  }
+};
+
+export const updateContactByIdController = async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    const updateData = req.body;
+    if (!Object.keys(updateData).length) {
+      return res.status(400).json({ message: 'Missing fields for update' });
+    }
+    const updatedContact = await updateContactById(contactId, updateData);
+    res.status(200).json({
+      status: 200,
+      message: 'Succesfully patched a contact! ',
+      data: updatedContact,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteContactController = async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      throw createError(404, 'Contact not found');
+    }
+    const deletedContact = await deleteContactById(contactId);
+
+    if (!deletedContact) {
+      throw createError(404, 'Contact not found');
+    }
+
+    res.status(204).send(); // No Content
+  } catch (error) {
+    next(error);
   }
 };
