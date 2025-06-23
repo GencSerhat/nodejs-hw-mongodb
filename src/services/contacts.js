@@ -1,4 +1,5 @@
-import { Contact } from "../db/Models/Contact.js";
+import Contact from "../db/models/Contact.js";
+import createError from 'http-errors';
 
 export const getAllContacts = async () => {
     try {
@@ -18,3 +19,34 @@ export const getContactById = async (contactId) => {
     throw error;
   }
 };
+
+export const addContact = async (contactData) => {
+  const newContact = await Contact.create(contactData);
+  return newContact;
+};
+
+export const updateContactById= async (contactId, updateData) => {
+  const updatedContact = await Contact.findByIdAndUpdate(contactId, updateData, {
+    new:true,
+    runValidators:true,
+  });
+  if(!updatedContact) {
+    throw createError(404, 'Contact not found');
+  }
+  return updatedContact;
+};
+
+
+
+export const deleteContactById = async (contactId) => {
+  const deletedContact = await Contact.findByIdAndDelete(contactId);
+  
+  if (!deletedContact) {
+    throw createError(404, 'Contact not found');
+  }
+
+  return deletedContact;
+};
+
+// findByIdAndUpdate ile veritabanında kişiyi güncelledik.
+// runValidators: true şema kurallarını uygulaması için
