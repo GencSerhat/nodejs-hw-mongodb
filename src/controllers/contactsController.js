@@ -30,29 +30,35 @@ export const addContactController = async (req, res, next) => {
     next(error);
   }
 };
-
-export const getAllContactsController = async (req, res) => {
+export const getAllContactsController = async (req, res, next) => {
   try {
-    const contacts = await getAllContacts();
+    const { page, perPage, sortBy, sortOrder } = req.query;
+
+    const result = await getAllContacts({
+      page: Number(page),
+      perPage: Number(perPage),
+      sortBy,
+      sortOrder,
+       type,
+      isFavourite,
+    });
+
     res.status(200).json({
       status: 200,
-      message: 'Succesfully found contacts!',
-      data: contacts,
+      message: 'Successfully found contacts!',
+      data: result,
     });
   } catch (error) {
-    console.error('Kontrolde hata oluştu : ', error.message);
-    res.status(500).json({
-      status: 500,
-      message: 'Internal server error',
-    });
+    next(error);
   }
 };
+
 
 export const getContactByIdController = async (req, res) => {
   try {
     const { contactId } = req.params;
 
-    // ➤ ObjectId format kontrolü
+    // ObjectId format kontrolü
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
       throw createError(404, 'Contact not found');
     }

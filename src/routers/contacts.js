@@ -3,6 +3,7 @@ import {
   addContactController,
   getAllContactsController,
   getContactByIdController,
+  deleteContactController,
 } from '../controllers/contactsController.js';
 import ctrlWrapper from '../utils/ctrlWrapper.js';
 
