@@ -32,7 +32,7 @@ export const addContactController = async (req, res, next) => {
 };
 export const getAllContactsController = async (req, res, next) => {
   try {
-    const { page, perPage, sortBy, sortOrder } = req.query;
+    const { page, perPage, sortBy, sortOrder, type, isFavourite } = req.query;
 
     const result = await getAllContacts({
       page: Number(page),
