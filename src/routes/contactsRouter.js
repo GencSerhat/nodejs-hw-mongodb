@@ -6,7 +6,7 @@ import {
   addContactController,
   deleteContactController,
 } from '../controllers/contactsController.js';
-
+import authenticate from '../middlewares/authenticate.js';
 
 import validateBody from '../middlewares/validateBody.js';
 import {
@@ -17,6 +17,7 @@ import isValidId from '../middlewares/isValidId.js';
 import ctrlWrapper from '../utils/ctrlWrapper.js';
 
 const router = express.Router();
+router.use(authenticate);
 router.get('/', ctrlWrapper(getAllContactsController));
 router.get('/:contactId', isValidId, ctrlWrapper(getContactByIdController));
 router.post(

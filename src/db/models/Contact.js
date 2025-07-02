@@ -16,9 +16,14 @@ const contactSchema = new mongoose.Schema({
   },
   contactType: {
     type: String,
-    enum: ['personal', 'business', 'other'], // örnek değerler
+    enum: ['personal', 'business', 'other'], 
     required: true,
   },
+     userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true, //  Her contact bir kullanıcıya ait olmak zorunda
+    },
 }, {
   timestamps: true,
 });
