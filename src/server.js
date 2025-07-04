@@ -1,7 +1,23 @@
-import cookieParser from 'cookie-parser';
 import express from 'express';
-import logger from 'pino-http';
+
+// denemeler yapıyorum
+
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+
+// denemeler yapıyorum
+console.log('JWT_SECRET:', process.env.JWT_SECRET); // test için ekledim
+import cookieParser from 'cookie-parser';
+
+import logger from 'pino-http';
+
 import mongoose from 'mongoose';
 
 import contactsRouter from './routes/contactsRouter.js';
@@ -9,7 +25,7 @@ import errorHandler from './middlewares/errorHandler.js';
 import notFoundHandler from './middlewares/notFoundHandler.js';
 import authRouter from './routes/auth.js'; 
 
-dotenv.config();
+
 const app = express();
 app.use(cookieParser());
 app.use(logger());

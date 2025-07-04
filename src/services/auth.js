@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
 import User from '../db/models/Users.js';
 import Session from '../db/models/Session.js';
-
+import '../config/env.js'; // deneme configler
 dotenv.config();
 
 // Ortam değişkenleri
