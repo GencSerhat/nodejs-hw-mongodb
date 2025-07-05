@@ -3,6 +3,9 @@ import createError from 'http-errors';
 import { loginUser } from '../services/auth.js';
 import { refreshSession } from '../services/auth.js';
 import { logoutUser } from '../services/auth.js';
+import User from '../db/models/Users.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 export const registerController = async (req, res, next) => {
   try {
@@ -98,6 +101,72 @@ export const logoutController = async (req, res, next) => {
     });
 
     res.status(204).send(); 
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const sendResetEmailController = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    //  Email kontrolü
+    if (!email) {
+      return res.status(400).json({
+        status: 400,
+        message: 'Email is required',
+      });
+    }
+const user = await User.findOne({ email });
+
+if (!user) {
+  return next(createError(404, 'User not found!'));
+}
+const payload = { email: user.email };
+
+const token = jwt.sign(payload, process.env.JWT_SECRET, {
+  expiresIn: '5m', // 5 dakika
+});
+const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
+console.log(resetLink); // test için yazdım
+   
+    res.status(200).json({
+      status: 200,
+      message: 'Reset password email has been successfully sent.',
+      data: {},
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPasswordController = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    // Token'ı doğrula
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      return next(createError(401, 'Token is expired or invalid.'));
+    }
+ const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return next(createError(404, 'User not found!'));
+    }
+     // Şifreyi güncelle
+    user.password = await bcrypt.hash(password, 10);
+    user.token = null;
+    await user.save();
+
+    res.status(200).json({
+      status: 200,
+      message: 'Password has been successfully reset.',
+      data: {},
+    });
+    
   } catch (error) {
     next(error);
   }

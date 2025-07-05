@@ -4,23 +4,38 @@ import { addContact } from '../services/contacts.js';
 import createError from 'http-errors';
 import { updateContactById } from '../services/contacts.js';
 import { deleteContactById } from '../services/contacts.js';
+import cloudinary from '../helpers/cloudinary.js';
 
 export const addContactController = async (req, res, next) => {
   try {
-    const { name, email, phoneNumber, isFavorite, contactType } = req.body;
+    const { name, email, phoneNumber, isFavourite, contactType } = req.body;
         const { _id: userId } = req.user;
 
     if (!name || !contactType || !phoneNumber) {
-      throw createError(404, 'Missing required fields');
+      throw createError(400, 'Missing required fields');
     }
+
+
+    // clouniary deneme
+ let photoUrl = '';
+console.log('Yüklenen dosya:', req.file); // test için ekledim
+    if (req.file) {
+        console.log('Dosya geldi, yükleniyor...'); // test için
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'contacts',
+      });
+      photoUrl = result.secure_url;
+    }
+       // clouniary deneme
 
     const newContact = await addContact({
       name,
       email,
       phoneNumber,
-      isFavorite,
+      isFavourite,
       contactType,
        userId,
+       photo: photoUrl,
     });
 
     res.status(201).json({
@@ -32,29 +47,7 @@ export const addContactController = async (req, res, next) => {
     next(error);
   }
 };
-// export const getAllContactsController = async (req, res, next) => {
-//   try {
-//     const { _id: userId } = req.user;
-//     const { page, perPage, sortBy, sortOrder, type, isFavourite } = req.query;
 
-//     const result = await getAllContacts({
-//       page: Number(page),
-//       perPage: Number(perPage),
-//       sortBy,
-//       sortOrder,
-//        type,
-//       isFavourite,
-//     });
-
-//     res.status(200).json({
-//       status: 200,
-//       message: 'Successfully found contacts!',
-//       data: result,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 export const getAllContactsController = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
@@ -81,35 +74,7 @@ export const getAllContactsController = async (req, res, next) => {
 };
 
 
-// export const getContactByIdController = async (req, res) => {
-//   try {
-//     const { contactId } = req.params;
 
-//     // ObjectId format kontrolü
-//     if (!mongoose.Types.ObjectId.isValid(contactId)) {
-//       throw createError(404, 'Contact not found');
-//     }
-
-//     // Şu an burada getContactById fonksiyonunu çağıracağız (services klasöründen)
-//     const contact = await getContactById(contactId);
-
-//     if (!contact) {
-//       return res.status(404).json({ message: 'Contact not found' });
-//     }
-
-//     res.status(200).json({
-//       status: 200,
-//       message: `Successfully found contact with id ${contactId}!`,
-//       data: contact,
-//     });
-//   } catch (error) {
-//     res.status(error.status || 500).json({
-//       status: error.status || 500,
-//       message: error.message || 'Internal server error',
-//       data: error.message || 'Something went wrong',
-//     });
-//   }
-// };
 export const getContactByIdController = async (req, res, next) => {
   try {
     const { contactId } = req.params;
@@ -131,34 +96,22 @@ export const getContactByIdController = async (req, res, next) => {
     next(error);
   }
 };
-// export const updateContactByIdController = async (req, res, next) => {
-//   try {
-//     const { contactId } = req.params;
-//     const updateData = req.body;
-//     if (!Object.keys(updateData).length) {
-//       return res.status(400).json({ message: 'Missing fields for update' });
-//     }
-//     const updatedContact = await updateContactById(contactId, updateData);
-//     res.status(200).json({
-//       status: 200,
-//       message: 'Succesfully patched a contact! ',
-//       data: updatedContact,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
 export const updateContactByIdController = async (req, res, next) => {
   try {
     const { contactId } = req.params;
     const updateData = req.body;
     const { _id: userId } = req.user;
 
-    if (!Object.keys(updateData).length) {
+    if (!Object.keys(updateData).length && !req.file) {
       throw createError(400, 'Missing fields for update');
     }
+ if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'contacts',
+      });
 
+      updateData.photo = result.secure_url; // 📌 Güncellenecek objeye photo URL'sini ekliyoruz
+    }
     const updatedContact = await updateContactById(userId, contactId, updateData);
 
     res.status(200).json({
@@ -171,24 +124,6 @@ export const updateContactByIdController = async (req, res, next) => {
   }
 };
 
-
-// export const deleteContactController = async (req, res, next) => {
-//   try {
-//     const { contactId } = req.params;
-//     if (!mongoose.Types.ObjectId.isValid(contactId)) {
-//       throw createError(404, 'Contact not found');
-//     }
-//     const deletedContact = await deleteContactById(contactId);
-
-//     if (!deletedContact) {
-//       throw createError(404, 'Contact not found');
-//     }
-
-//     res.status(204).send(); // No Content
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 export const deleteContactController = async (req, res, next) => {
   try {

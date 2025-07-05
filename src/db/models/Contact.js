@@ -24,6 +24,10 @@ const contactSchema = new mongoose.Schema({
       ref: 'User',
       required: true, //  Her contact bir kullanıcıya ait olmak zorunda
     },
+    photo: {
+  type: String,
+  default: '',
+},
 }, {
   timestamps: true,
 });
