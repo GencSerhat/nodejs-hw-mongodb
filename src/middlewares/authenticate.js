@@ -2,6 +2,14 @@ import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
 import User from '../db/models/Users.js';
 import '../config/env.js'; // deneme configler
+
+//test için
+import dotnev from 'dotenv';
+dotnev.config();
+
+//test için
+
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticate = async (req, res, next) => {
@@ -40,3 +48,5 @@ console.log('JWT_SECRET:', JWT_SECRET); // test için ekledim
 };
 
 export default authenticate;
+
+
