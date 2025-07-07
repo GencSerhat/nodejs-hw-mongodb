@@ -112,23 +112,23 @@ export const sendResetEmailController = async (req, res, next) => {
       throw createError(400, 'Email is required');
     }
 
-    // 📌 Kullanıcı var mı kontrol et
+    // Kullanıcı var mı
     const user = await User.findOne({ email });
     if (!user) {
       throw createError(404, 'User not found!');
     }
 
-    // 📌 Token üret (email bilgisiyle)
+    //  Token üret (email bilgisiyle)
     const payload = { email: user.email };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '5m',
     });
 
-    // 📌 Reset linki hazırla
+    // 📌 Reset linki 
     const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
     console.log('🔗 Reset Link:', resetLink);
 
-    // 📩 Email gönder
+    //  Email gönderme
     await sendEmail({
       to: user.email,
       subject: 'Reset Your Password',
@@ -140,14 +140,14 @@ export const sendResetEmailController = async (req, res, next) => {
       `,
     });
 
-    // ✅ Başarılı yanıt
+    // Başarılı yanıt
     res.status(200).json({
       status: 200,
       message: 'Reset password email has been successfully sent.',
       data: {},
     });
   } catch (error) {
-    // ❌ E-posta gönderilemedi ise
+    // E-posta gönderilemedi
     if (error.response) {
       return next(
         createError(500, 'Failed to send the email, please try again later.')
@@ -188,37 +188,3 @@ export const resetPasswordController = async (req, res, next) => {
     next(error);
   }
 };
-
-// export const sendResetEmailController = async (req, res, next) => {
-//   try {
-//     const { email } = req.body;
-
-//     //  Email kontrolü
-//     if (!email) {
-//       return res.status(400).json({
-//         status: 400,
-//         message: 'Email is required',
-//       });
-//     }
-// const user = await User.findOne({ email });
-
-// if (!user) {
-//   return next(createError(404, 'User not found!'));
-// }
-// const payload = { email: user.email };
-
-// const token = jwt.sign(payload, process.env.JWT_SECRET, {
-//   expiresIn: '5m', // 5 dakika
-// });
-// const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
-// console.log(resetLink); // test için yazdım
-
-//     res.status(200).json({
-//       status: 200,
-//       message: 'Reset password email has been successfully sent.',
-//       data: {},
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
