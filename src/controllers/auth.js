@@ -106,36 +106,87 @@ export const logoutController = async (req, res, next) => {
   }
 };
 
+// export const sendResetEmailController = async (req, res, next) => {
+//   try {
+//     const { email } = req.body;
+
+//     //  Email kontrolü
+//     if (!email) {
+//       return res.status(400).json({
+//         status: 400,
+//         message: 'Email is required',
+//       });
+//     }
+// const user = await User.findOne({ email });
+
+// if (!user) {
+//   return next(createError(404, 'User not found!'));
+// }
+// const payload = { email: user.email };
+
+// const token = jwt.sign(payload, process.env.JWT_SECRET, {
+//   expiresIn: '5m', // 5 dakika
+// });
+// const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
+// console.log(resetLink); // test için yazdım
+   
+//     res.status(200).json({
+//       status: 200,
+//       message: 'Reset password email has been successfully sent.',
+//       data: {},
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 export const sendResetEmailController = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    //  Email kontrolü
+    // 📌 Email kontrolü
     if (!email) {
-      return res.status(400).json({
-        status: 400,
-        message: 'Email is required',
-      });
+      throw createError(400, 'Email is required');
     }
-const user = await User.findOne({ email });
 
-if (!user) {
-  return next(createError(404, 'User not found!'));
-}
-const payload = { email: user.email };
+    // 📌 Kullanıcı var mı kontrol et
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw createError(404, 'User not found!');
+    }
 
-const token = jwt.sign(payload, process.env.JWT_SECRET, {
-  expiresIn: '5m', // 5 dakika
-});
-const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
-console.log(resetLink); // test için yazdım
-   
+    // 📌 Token üret (email bilgisiyle)
+    const payload = { email: user.email };
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '5m' });
+
+    // 📌 Reset linki hazırla
+    const resetLink = `${APP_DOMAIN}/reset-password?token=${token}`;
+    console.log('🔗 Reset Link:', resetLink);
+
+    // 📩 Email gönder
+    await sendEmail({
+      to: user.email,
+      subject: 'Reset Your Password',
+      html: `
+        <h2>Şifre Sıfırlama</h2>
+        <p>Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:</p>
+        <a href="${resetLink}">${resetLink}</a>
+        <p>Bu bağlantı 5 dakika içinde geçerliliğini yitirecektir.</p>
+      `,
+    });
+
+    // ✅ Başarılı yanıt
     res.status(200).json({
       status: 200,
       message: 'Reset password email has been successfully sent.',
       data: {},
     });
   } catch (error) {
+    // ❌ E-posta gönderilemedi ise
+    if (error.response) {
+      return next(createError(500, 'Failed to send the email, please try again later.'));
+    }
+
     next(error);
   }
 };
