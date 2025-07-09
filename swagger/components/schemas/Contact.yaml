@@ -1,0 +1,36 @@
+type: object
+properties:
+  _id:
+    type: string
+    example: "64a7c13e52d4c2b9f5e8a7b4"
+  name:
+    type: string
+    example: "Ali Veli"
+  email:
+    type: string
+    example: "ali@example.com"
+  phone:
+    type: string
+    example: "+90 555 123 45 67"
+  photo:
+    type: string
+    example: "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+  favorite:
+    type: boolean
+    example: false
+  owner:
+    type: string
+    example: "64a7c13e52d4c2b9f5e8a7b3"
+  createdAt:
+    type: string
+    format: date-time
+    example: "2025-07-08T08:12:15.000Z"
+  updatedAt:
+    type: string
+    format: date-time
+    example: "2025-07-08T08:12:15.000Z"
+required:
+  - name
+  - email
+  - phone
+  - owner

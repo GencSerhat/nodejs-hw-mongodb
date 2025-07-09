@@ -1,0 +1,56 @@
+tags:
+  - Auth
+summary: User login
+operationId: loginUser
+description: Authenticate user with email and password, and return a token.
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - email
+          - password
+        properties:
+          email:
+            type: string
+            format: email
+            example: user@example.com
+          password:
+            type: string
+            format: password
+            example: secret123
+responses:
+  '200':
+    description: Login successful
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            token:
+              type: string
+              example: your.jwt.token
+            user:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                subscription:
+                  type: string
+                  example: free
+  '401':
+    description: Invalid credentials
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              type: integer
+              example: 401
+            message:
+              type: string
+              example: Email or password is wrong

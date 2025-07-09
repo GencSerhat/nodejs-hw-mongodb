@@ -26,6 +26,11 @@ import notFoundHandler from './middlewares/notFoundHandler.js';
 import authRouter from './routes/auth.js'; 
 
 
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+const swaggerDocument = YAML.load(path.resolve(__dirname, '../docs/openapi.yaml'));
+
+
 const app = express();
 app.use(cookieParser());
 app.use(logger());
@@ -45,6 +50,10 @@ mongoose
   .catch((error) => {
     console.error('Mongoose bağlantı hatası : ', error.message);
   });
+
+
+
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(notFoundHandler);
 app.use(errorHandler);

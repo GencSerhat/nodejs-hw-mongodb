@@ -1,0 +1,266 @@
+openapi: 3.0.3
+info:
+  version: 1.0.0
+  title: Kişi Rehberi API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  description: >
+    Bu API, kullanıcıların kişi rehberi oluşturmasına ve yönetmesine olanak tanır.
+
+tags:
+  - name: Auth
+    description: Kullanıcı kimlik doğrulama işlemleri
+  - name: Contacts
+    description: Kişi yönetimi işlemleri
+
+servers:
+  - url: http://localhost:3000
+  - url: https://nodejs-hw-mongodb-4w62.onrender.com
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      operationId: registerUser
+      description: Allows a new user to register with email and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: secret123
+      responses:
+        '201':
+          description: User registered successfully
+        '409':
+          description: Email already in use
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User login
+      operationId: loginUser
+      description: Authenticate user with email and password, and return a token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: secret123
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: User logout
+      operationId: logoutUser
+      description: Logs out the currently authenticated user by invalidating their token.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Logout successful
+        '401':
+          description: Unauthorized access
+
+  /auth/current:
+    get:
+      tags:
+        - Auth
+      summary: Get current user
+      operationId: getCurrentUser
+      description: Returns information about the currently authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user data
+        '401':
+          description: Unauthorized access
+
+  /contacts:
+    get:
+      tags:
+        - Contacts
+      summary: Get all contacts
+      operationId: getAllContacts
+      description: Retrieve a list of all contacts, with optional pagination and filtering.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of contacts per page
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: favorite
+          in: query
+          description: Filter contacts by favorite status
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successfully retrieved list of contacts
+        '401':
+          description: Unauthorized access
+
+    post:
+      tags:
+        - Contacts
+      summary: Create a new contact
+      operationId: createContact
+      description: Add a new contact to the database
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - phone
+              properties:
+                name:
+                  type: string
+                  example: Ali Veli
+                email:
+                  type: string
+                  format: email
+                  example: ali@example.com
+                phone:
+                  type: string
+                  example: "+90 555 123 45 67"
+      responses:
+        '201':
+          description: Contact created successfully
+        '400':
+          description: Bad request
+
+  /contacts/{id}:
+    get:
+      tags:
+        - Contacts
+      summary: Get contact by ID
+      operationId: getContactById
+      description: Retrieve a single contact using its unique ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the contact to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved contact
+        '404':
+          description: Contact not found
+
+    patch:
+      tags:
+        - Contacts
+      summary: Update contact by ID
+      operationId: updateContactById
+      description: Update a contact’s information using its unique ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the contact to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '200':
+          description: Contact updated successfully
+        '404':
+          description: Contact not found
+
+    delete:
+      tags:
+        - Contacts
+      summary: Delete a contact by ID
+      operationId: deleteContactById
+      description: Delete a contact from the database using its ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the contact to delete
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Contact successfully deleted
+        '404':
+          description: Contact not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

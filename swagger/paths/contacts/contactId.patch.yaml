@@ -1,0 +1,45 @@
+tags:
+  - Contacts
+summary: Update contact by ID
+operationId: updateContactById
+description: Update a contact’s information using its unique ID.
+security:
+  - bearerAuth: []
+
+parameters:
+  - name: id
+    in: path
+    required: true
+    description: ID of the contact to update
+    schema:
+      type: string
+
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+            format: email
+          phone:
+            type: string
+
+responses:
+  '200':
+    description: Contact updated successfully
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Contact.yaml
+
+  '404':
+    description: Contact not found
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/responses/NotFound.yaml
