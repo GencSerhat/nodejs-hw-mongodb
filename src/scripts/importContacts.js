@@ -1,11 +1,12 @@
-import { Contact } from '../db/Models/Contact.js';
+import { Contact } from '../db/models/Contact.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const filePath = path.join(__dirname, 'data', 'contacts.json');
+// const filePath = path.join(__dirname, 'data', 'contacts.json');
+const filePath = path.join(__dirname, '..', 'data', 'contacts.json');
 
 const readContacts = async () => {
   try {

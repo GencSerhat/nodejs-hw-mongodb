@@ -1,33 +1,50 @@
-
 import express from 'express';
-import cors from 'cors';
-import pino from 'pino-http';
+
+// denemeler yapıyorum
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+
+// denemeler yapıyorum
+console.log('JWT_SECRET:', process.env.JWT_SECRET); // test için ekledim
+import cookieParser from 'cookie-parser';
+
+import logger from 'pino-http';
+
+import mongoose from 'mongoose';
+
 import contactsRouter from './routes/contactsRouter.js';
-import { getAllContactsController } from './controllers/contactsController.js';
+import errorHandler from './middlewares/errorHandler.js';
+import notFoundHandler from './middlewares/notFoundHandler.js';
+import authRouter from './routes/auth.js'; 
 
-export const setupServer = () => {
-  const app = express();
 
-  app.use(cors());
-  app.use(pino());
-  app.use('/contacts', contactsRouter);
-  app.get('/contacts', getAllContactsController);
-
-  app.use((req, res) => {
-    res.status(404).json({ message: 'notFound' });
+const app = express();
+app.use(cookieParser());
+app.use(logger());
+app.use(express.json());
+app.use('/auth', authRouter);
+app.use('/contacts', contactsRouter);
+const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } = process.env;
+const mongoUri = `mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
+mongoose
+  .connect(mongoUri)
+  .then(() => {
+    console.log('Mongo connection succesfully estabilshed!');
+    app.listen(3000, () => {
+      console.log('Serves is running on port 3000');
+    });
+  })
+  .catch((error) => {
+    console.error('Mongoose bağlantı hatası : ', error.message);
   });
 
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-};
-
-
-// setupServer fonksiyonunu dışa aktarıyoruz (export), çünkü sonra index.js dosyasından bu fonksiyonu çağıracağız.
-
-// express() fonksiyonu, HTTP isteklerini dinleyecek uygulamayı (app) oluşturur.
-
-// cors() → Tarayıcıdan gelen isteklerin reddedilmemesi için gereklidir. Yoksa API çalışsa bile frontend ulaşamaz.
-
-// pino() → Her gelen HTTP isteğini loglar. Hem pratik, hem hafif.
+app.use(notFoundHandler);
+app.use(errorHandler);
